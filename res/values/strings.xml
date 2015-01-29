@@ -23,7 +23,7 @@
 
     <!-- Strings for competitor list activity -->
     <string name="competitor_list_title">Displaying all competitors</string>
-    <string name="no_entries">No entries exist yet</string>
+    <string name="no_entries">No competitors exist yet</string>
     <string name="series_menu_insert">Create series</string>
     <string name="menu_delete">Delete</string>
     <string name="menu_edit_series_info">Edit series settings</string>
@@ -35,7 +35,7 @@
     <!-- Strings for series creation/edit activity -->
     <string name="series_list_title">Displaying all race series</string>
     <string name="competitor_select_title">Select competitors</string>
-    <string name="no_series">No entries in series yet</string>
+    <string name="no_series">No series exist yet</string>
     <string name="series_edit_title">Edit series</string>
     <string name="series_name_line">Series name</string>
     <string name="num_races_line">Number of races</string>
@@ -71,7 +71,7 @@
     <!-- Strings for SeriesRacesListActivity -->
     <string name="race_list_title">Displaying races in series</string>
     <string name="race">Race</string>
-    <string name="no_races">Nothing to display</string>
+    <string name="no_races">No races in series yet</string>
 
     <!-- Strings for result entry list activity -->
     <string name="results_list_title">Enter results for competitor</string>
@@ -85,6 +85,7 @@
 
     <!-- Strings for RaceResultsEntryListActivity -->
     <string name="race_results_list_title">Enter results for race</string>
+    <string name="no_competitors">No competitors selected yet</string>
 
     <!-- Strings for times entry list activity -->
     <string name="times_list_title">Enter times for competitor</string>

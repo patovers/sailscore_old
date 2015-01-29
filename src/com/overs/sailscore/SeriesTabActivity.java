@@ -46,12 +46,12 @@ public class SeriesTabActivity extends Activity {
         
         Tab tabA = actionBar.newTab();
         tabA.setText(getString(R.string.enter_by_competitor));
-        tabA.setTabListener(new TabListener<SeriesEntriesListActivity>(this, "Tag A", SeriesEntriesListActivity.class));
+        tabA.setTabListener(new TabListener<SeriesEntriesListFragment>(this, "Tag A", SeriesEntriesListFragment.class));
         actionBar.addTab(tabA);
         
         Tab tabB = actionBar.newTab();
         tabB.setText(getString(R.string.enter_by_race));
-        tabB.setTabListener(new TabListener<SeriesRacesListActivity>(this, "Tag B", SeriesRacesListActivity.class));
+        tabB.setTabListener(new TabListener<SeriesRacesListFragment>(this, "Tag B", SeriesRacesListFragment.class));
         actionBar.addTab(tabB);
                 
         if (savedInstanceState != null) {

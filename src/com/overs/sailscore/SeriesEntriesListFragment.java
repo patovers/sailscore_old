@@ -17,7 +17,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
-public class SeriesEntriesListActivity extends ListFragment{
+public class SeriesEntriesListFragment extends ListFragment{
     private SailscoreDbAdapter mDbHelper;
 	protected Long mRowId; // The rowId relates to the series and is carried through from the calling activity
 	private boolean seriesType;

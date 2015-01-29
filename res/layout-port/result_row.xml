@@ -73,7 +73,6 @@
         android:ems="10"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:gravity="right"
         android:imeActionLabel="Done"
         android:imeOptions="actionDone"
         android:inputType="number"

@@ -1,7 +1,5 @@
 package com.overs.sailscore;
 
-import com.overs.sailscore.R.string;
-
 public class SailscoreHelpers {
 	/* Method to convert result code into the text equivalent
 	 * 

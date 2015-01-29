@@ -263,9 +263,11 @@ public class SeriesScoreListActivity extends ListActivity{
 			Long id = combinedList.get(entry).getId();
 			int rank = combinedList.get(entry).getPosition();
 			// resultsCursor returns one row per race for this competitor but they are not in the right order
-		   	Cursor resultsCursor = mDbHelper.getResults(id, mRowId);
+/*		   	Cursor resultsCursor = mDbHelper.getResults(id, mRowId);
 		   	// This loop goes through all the races for each competitor so the cursor has to have returned results in race order
 			for (int race=0; race < numRaces; race++) {
+				// These won't just fit into the combinedList format because combinedList is sorted into a new
+				// order as a result of the scoring process
 				int startTime = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_START_TIME));
 				int finishTime = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_FINISH_TIME));
 				int laps = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_LAPS));
@@ -285,8 +287,8 @@ public class SeriesScoreListActivity extends ListActivity{
 					laps,
 					totalLaps,
 					combinedList.get(entry).getRaceResults().get(race).getResultCode(),
-					//rdgPoints, TODO this is saving into the wrong race
-					combinedList.get(entry).getRaceResults().get(race).getRdgPoints(),
+					rdgPoints, //TODO this is saving into the wrong race
+					//combinedList.get(entry).getRaceResults().get(race).getRdgPoints(),
 					combinedList.get(entry).getRaceResults().get(race).getPoints(), 
 					1, // scored
 					combinedList.get(entry).getRaceResults().get(race).isDiscarded(),
@@ -296,7 +298,7 @@ public class SeriesScoreListActivity extends ListActivity{
 				resultsCursor.moveToNext();
 			}
 			resultsCursor.close();
-			
+*/			
 			// Finally we need to create a string of all the race results for display in the row of the listView
 			// This can only be done here because up to now we didn't have all the information and races were in the wrong order.
 			// Pull out the race results to work on:
@@ -311,6 +313,47 @@ public class SeriesScoreListActivity extends ListActivity{
 					return (int) (p1.getRace() - p2.getRace());
 				}
 			});
+	        // Put the ordered list of results for this competitor back into combinedList
+	        combinedList.get(entry).setRaceResults(resultList);
+	        // Before displaying what we have, we need to update a few columns in the database
+		   	Cursor resultsCursor = mDbHelper.getResults(id, mRowId);
+		   	// This loop goes through all the races for each competitor so the cursor has to have returned results in race order
+			for (int race=0; race < numRaces; race++) {
+				// These won't just fit into the combinedList format because combinedList is sorted into a new
+				// order as a result of the scoring process
+				int startTime = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_START_TIME));
+				int finishTime = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_FINISH_TIME));
+				int laps = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_LAPS));
+				int totalLaps = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_TOTAL_LAPS));
+				int rdgPoints = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_RDG_POINTS));
+				// This is a bodge for  now. Should really fix this properly
+				if (combinedList.get(entry).getRaceResults().get(race).getPoints() == 200000) {
+					combinedList.get(entry).getRaceResults().get(race).setResultCode(1);
+				}
+				mDbHelper.updateResult(
+					id, // competitor id
+					mRowId, // series
+					combinedList.get(entry).getRaceResults().get(race).getRace(),       
+					combinedList.get(entry).getRaceResults().get(race).getResult(),
+					startTime,
+					finishTime,
+					laps,
+					totalLaps,
+					combinedList.get(entry).getRaceResults().get(race).getResultCode(),
+					rdgPoints, //TODO this is saving into the wrong race
+					//combinedList.get(entry).getRaceResults().get(race).getRdgPoints(),
+					combinedList.get(entry).getRaceResults().get(race).getPoints(), 
+					1, // scored
+					combinedList.get(entry).getRaceResults().get(race).isDiscarded(),
+					rank,
+					combinedList.get(entry).getGrossPts(),
+					combinedList.get(entry).getNettPts());
+				resultsCursor.moveToNext();
+			}
+			resultsCursor.close();
+
+	        
+	        
 	        // Now we can build the string representing all the individual races for each entry.
 	        String sResults = new String();
 	        sResults = buildResultsString(seriesType, resultList);
@@ -473,7 +516,7 @@ public class SeriesScoreListActivity extends ListActivity{
 			}
 			
 			// Now we need to adjust any results that have scoring penalties or RDG
-			for (int row = 0; row<numEntries-1; row++) {
+			for (int row = 0; row<numEntries; row++) {
 				code = wholeRace.get(row).code;
 				switch (code) {
 				case 14: case 15:

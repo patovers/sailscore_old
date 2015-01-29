@@ -64,20 +64,16 @@ import android.widget.TextView;
 	public View getView(int position, View convertView, ViewGroup parent) {
 		final int pos = position; // is this right? I'm getting reused data in the list
 		final ViewHolder holder;
-		combinedList.get(pos).setCodePriority(false);
+		combinedList.get(pos).setCodePriority(true);
 		// Add an on click listener to this method that will update the source data in the calling activity when items change
 		if (convertView == null) {
 			convertView = mInflater.inflate(R.layout.result_row, null);
-			//Log.d("ResultList", String.format("Get view %d", position));
-			//Log.d("ResultList", String.format("Result %s", combinedList.get(pos).getResult()));
 			holder = new ViewHolder();
 			holder.race_line = (TextView) convertView.findViewById(R.id.race_line);
 			holder.race_number = (TextView) convertView.findViewById(R.id.race_number);
 			holder.result = (EditText) convertView.findViewById(R.id.result);
 			holder.result_code_spinner = (Spinner) convertView.findViewById(R.id.result_code_spinner);
 			holder.rdg_pos = (EditText) convertView.findViewById(R.id.rdg_pos);
-			//ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-		    //        mContext, R.array.result_codes, android.R.layout.simple_spinner_item);
 			ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
 		            mContext, R.array.result_codes, R.layout.codes_spinner_item);
 		    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -95,8 +91,6 @@ import android.widget.TextView;
 			@Override
 			public void onItemSelected(AdapterView<?> av, View v, int spinPosition, long id) {
 				combinedList.get(pos).setSpinPosition(spinPosition);
-				//holder.result_code_spinner.setSelection(spinPosition);
-				// codePriority forces the result to be blanked out when anything other than a redress case
 				if (spinPosition == 0) {
 					combinedList.get(pos).setCodePriority(false);
 				} else {
@@ -117,12 +111,7 @@ import android.widget.TextView;
 				} else {
 					combinedList.get(pos).setResult(s.toString());
 					combinedList.get(pos).setCodePriority(false);
-/*					if (combinedList.get(pos).getSpinPosition() == 11) {
-						combinedList.get(pos).setCodePriority(true);
-					} else {
-						combinedList.get(pos).setCodePriority(false);
-					}
-*/				}
+				}
 			}
 	          @Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -132,12 +121,11 @@ import android.widget.TextView;
 		
 		final TextWatcher rdgTextWatcher = new TextWatcher() {
 	          @Override
-			public void afterTextChanged(Editable s) {
-	        	  combinedList.get(pos).setRedressPosition(s.toString());
-	        	  //combinedList.get(pos).setCodePriority(true);
-	        	  // Forcing RDG doesn't work because this watcher is called every time the
-	        	  // view is refreshed, even when text hasn't changed.
-	        	  //combinedList.get(pos).setSpinPosition(11); // Force RDG
+	          public void afterTextChanged(Editable s) {
+	        	  if (s.length() == 0) {
+	        	  } else {
+	        		  combinedList.get(pos).setRedressPosition(s.toString());
+	        	  }
 	          }
 	          @Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}

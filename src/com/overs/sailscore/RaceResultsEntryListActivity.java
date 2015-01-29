@@ -64,11 +64,13 @@ public class RaceResultsEntryListActivity extends ListActivity {
         		for (int i = 0; i< resultsList.length; i++) {
         			Long entryId = entriesCursor.getLong(entriesCursor.getColumnIndex(SailscoreDbAdapter.KEY_ROWID));
         			// Firstly if there is a 0 result and a 0 resultCode, fix it to be DNC
-        			// Note that if the save button was never pressed we get a DNC 
+        			// Note that if a result was never entered or a code was never selected we get a DNC 
         			// as a result of this fix.
-        			if (resultsList[i] == 0 && resultCodes[i] ==0) {
-        				resultCodes[i] = 1;
-        				codePriorities[i] = true;
+        			// If there is a codePriority with 0 result then treat the code as real
+        			if (resultsList[i] == 0) {
+        				if (!codePriorities[i]) {
+        					resultCodes[i] = 1;
+        				}
         			}
         			if (codePriorities[i]) { // indicates result code was modified
         				switch (resultCodes[i]) {
@@ -105,8 +107,10 @@ public class RaceResultsEntryListActivity extends ListActivity {
 		String race = "Series: " + seriesName + ", Race: " + Long.toString(raceId);
 		mRaceText.setText(race);
 		seriesCursor.close();
+		boolean entriesToDisplay = false;
 		// Process the cursor to populate the elements in the ArrayList before binding it to the view
 		if (raceCursor != null && raceCursor.moveToFirst()) {
+			entriesToDisplay = true;
 			for (int i = 0; i < raceCursor.getCount(); i++) {
 				EntryResultObj combinedObj = new EntryResultObj();
 				String helm = raceCursor.getString(raceCursor.getColumnIndex(SailscoreDbAdapter.KEY_HELM));
@@ -147,10 +151,11 @@ public class RaceResultsEntryListActivity extends ListActivity {
 			}
 		}
 		raceCursor.close();
-        //final ListView list = (ListView) mListView.findViewById(android.R.id.list);
         final ListView list = getListView();
-        list.setAdapter(mAdapter);
-        list.setItemsCanFocus(true);
+        if (entriesToDisplay) {
+        	list.setAdapter(mAdapter);
+        	list.setItemsCanFocus(true);
+        }
 	}
 	
     // Here the rowId is the ID of the series to work with from the series table

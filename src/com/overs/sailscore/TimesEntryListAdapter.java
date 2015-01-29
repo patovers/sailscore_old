@@ -39,13 +39,13 @@ import android.widget.TextView;
 	}
 
 	@Override
-	public Object getItem(int position) {
-		return combinedList.get(position);
+	public Object getItem(int pos) {
+		return combinedList.get(pos);
 	}
 
 	@Override
-	public long getItemId(int position) {
-		return position;
+	public long getItemId(int pos) {
+		return pos;
 	}
 	
 	@Override
@@ -56,16 +56,16 @@ import android.widget.TextView;
 	}
 
 	@Override
-	public int getItemViewType(int position) {
+	public int getItemViewType(int pos) {
 
-	    return position;
+	    return pos;
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		final int pos = position;
 		final ViewHolder holder;
-		combinedList.get(pos).setCodePriority(false);
+		combinedList.get(pos).setCodePriority(true);
 		// Add an on click listener to this method that will update the source data in the calling activity when items change
 		if (convertView == null) {
 			convertView = mInflater.inflate(R.layout.times_row, null);
@@ -93,7 +93,11 @@ import android.widget.TextView;
 			@Override
 			public void onItemSelected(AdapterView<?> av, View v, int spinPosition, long id) {
 				combinedList.get(pos).setSpinPosition(spinPosition);
-				combinedList.get(pos).setCodePriority(true);
+				if (spinPosition == 0) {
+					combinedList.get(pos).setCodePriority(false);
+				} else {
+					combinedList.get(pos).setCodePriority(true);
+				}
 			}
 
 			@Override
@@ -104,8 +108,11 @@ import android.widget.TextView;
 		final TextWatcher startMinsTextWatcher = new TextWatcher() {
 			@Override
 			public void afterTextChanged(Editable s) {
-				combinedList.get(pos).setsMins(s.toString());
-				combinedList.get(pos).setCodePriority(false);
+				if (s.length() == 0) {
+				} else {
+					combinedList.get(pos).setsMins(s.toString());
+					combinedList.get(pos).setCodePriority(false);
+				}
 			}
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -116,8 +123,11 @@ import android.widget.TextView;
 		final TextWatcher startSecsTextWatcher = new TextWatcher() {
 			@Override
 			public void afterTextChanged(Editable s) {
-				combinedList.get(pos).setsSecs(s.toString());
-				combinedList.get(pos).setCodePriority(false);
+				if (s.length() == 0) {
+				} else {
+					combinedList.get(pos).setsSecs(s.toString());
+					combinedList.get(pos).setCodePriority(false);
+				}
 			}
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -128,8 +138,11 @@ import android.widget.TextView;
 		final TextWatcher finishMinsTextWatcher = new TextWatcher() {
 			@Override
 			public void afterTextChanged(Editable s) {
-				combinedList.get(pos).setfMins(s.toString());
-				combinedList.get(pos).setCodePriority(false);
+				if (s.length() == 0) {
+				} else {
+					combinedList.get(pos).setfMins(s.toString());
+					combinedList.get(pos).setCodePriority(false);
+				}
 			}
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -140,8 +153,11 @@ import android.widget.TextView;
 		final TextWatcher finishSecsTextWatcher = new TextWatcher() {
 			@Override
 			public void afterTextChanged(Editable s) {
-				combinedList.get(pos).setfSecs(s.toString());
-				combinedList.get(pos).setCodePriority(false);
+				if (s.length() == 0) {
+				} else {
+					combinedList.get(pos).setfSecs(s.toString());
+					combinedList.get(pos).setCodePriority(false);
+				}
 			}
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -152,8 +168,11 @@ import android.widget.TextView;
 		final TextWatcher lapsSailedTextWatcher = new TextWatcher() {
 			@Override
 			public void afterTextChanged(Editable s) {
-				combinedList.get(pos).setLaps(s.toString());
-				combinedList.get(pos).setCodePriority(false);
+				if (s.length() == 0) {
+				} else {
+					combinedList.get(pos).setLaps(s.toString());
+					combinedList.get(pos).setCodePriority(false);
+				}
 			}
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -164,8 +183,11 @@ import android.widget.TextView;
 		final TextWatcher totalLapsTextWatcher = new TextWatcher() {
 			@Override
 			public void afterTextChanged(Editable s) {
-				combinedList.get(pos).setTotalLaps(s.toString());
-				combinedList.get(pos).setCodePriority(false);
+				if (s.length() == 0) {
+				} else {
+					combinedList.get(pos).setTotalLaps(s.toString());
+					combinedList.get(pos).setCodePriority(false);
+				}
 			}
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -176,11 +198,10 @@ import android.widget.TextView;
 		final TextWatcher rdgTextWatcher = new TextWatcher() {
 			@Override
 			public void afterTextChanged(Editable s) {
-				combinedList.get(pos).setRedressPosition(s.toString());
-				combinedList.get(pos).setCodePriority(true);
-				// Forcing RDG doesn't work because this watcher is called every time the
-				// view is refreshed, even when text hasn't changed.
-				//combinedList.get(pos).setSpinPosition(11); // Force RDG
+				if (s.length() == 0) {
+				} else {
+					combinedList.get(pos).setRedressPosition(s.toString());
+				}
 			}
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -201,15 +222,15 @@ import android.widget.TextView;
 		holder.rdg_pos.addTextChangedListener(rdgTextWatcher);
 
 		holder.race_line.setText(R.string.race_line);
-		holder.race_number.setText(combinedList.get(position).getRaceNumber());
-		holder.start_mins.setText(combinedList.get(position).getsMins());
-		holder.start_secs.setText(combinedList.get(position).getsSecs());
-		holder.finish_mins.setText(combinedList.get(position).getfMins());
-		holder.finish_secs.setText(combinedList.get(position).getfSecs());
-		holder.laps_sailed.setText(combinedList.get(position).getLaps());
-		holder.total_laps.setText(combinedList.get(position).getTotalLaps());
-		holder.rdg_pos.setText(combinedList.get(position).getRedressPosition());
-		holder.result_code_spinner.setSelection(combinedList.get(position).getSpinPosition());
+		holder.race_number.setText(combinedList.get(pos).getRaceNumber());
+		holder.result_code_spinner.setSelection(combinedList.get(pos).getSpinPosition());
+		holder.start_mins.setText(combinedList.get(pos).getsMins());
+		holder.start_secs.setText(combinedList.get(pos).getsSecs());
+		holder.finish_mins.setText(combinedList.get(pos).getfMins());
+		holder.finish_secs.setText(combinedList.get(pos).getfSecs());
+		holder.laps_sailed.setText(combinedList.get(pos).getLaps());
+		holder.total_laps.setText(combinedList.get(pos).getTotalLaps());
+		holder.rdg_pos.setText(combinedList.get(pos).getRedressPosition());
 
 		// Set alternating colour pattern
 		int colorPos = position % colors.length;  

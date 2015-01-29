@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import android.app.ListActivity;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -37,17 +35,6 @@ public class TimesEntryListActivity extends ListActivity {
         registerButtonListener();
     }
 	
- 	@Override
- 	public boolean onOptionsItemSelected(MenuItem item) {
- 	    switch (item.getItemId()) {
- 	    // Respond to the action bar's Up/Home button
- 	    case android.R.id.home:
- 	        NavUtils.navigateUpFromSameTask(this);
- 	        return true;
- 	    }
- 	    return super.onOptionsItemSelected(item);
- 	} 	
- 	
 	private void registerButtonListener() {
         mSaveResultsButton.setOnClickListener(new View.OnClickListener() {
         	@Override
@@ -64,12 +51,11 @@ public class TimesEntryListActivity extends ListActivity {
         			// Firstly if there is a 0 result and a 0 resultCode, fix it to be DNC
         			// Note that if the save button was never pressed we get a DNC 
         			// as a result of this fix.
-        			if (resultCodes[i] == 0 && finishTimes[i] == 0) {
-        				resultCodes[i] = 1; // DNC code inserted if no result and no code
-        				codePriorities[i] = true;
+        			if (finishTimes[i] == 0) {
+        				if (!codePriorities[i]) {
+            				resultCodes[i] = 1; // DNC code inserted if no result and no code
+        				}
         			}
-        			// code priority is used to tell if the result was entered after the resultcode
-        			// if it is then we know the result is valid even if the result code value says DNC
         			if (codePriorities[i]) {
         				switch(resultCodes[i]) {
         				case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 10:
@@ -190,7 +176,7 @@ public class TimesEntryListActivity extends ListActivity {
 			}
 		}
 		resultsCursor.close();
-        final ListView list = (ListView) findViewById(android.R.id.list);
+        final ListView list = getListView();
         list.setAdapter(mAdapter);
         list.setItemsCanFocus(true);
 	}

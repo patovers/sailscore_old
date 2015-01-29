@@ -41,6 +41,7 @@ public class ResultsEntryListActivity extends ListActivity {
         	@Override
         	public void onClick(View v) {
         		int[] resultsList = getEnteredResults(); // Get all the result values that have been entered
+        		// Need to fix any codes for results that are entered as 0
         		int[] resultCodes = getEnteredCodes();
         		int[] redress = getEnteredRedress();
         		boolean[] codePriorities = getEnteredPriorities();
@@ -48,13 +49,14 @@ public class ResultsEntryListActivity extends ListActivity {
         		for (int i = 0; i< resultsList.length; i++) {
         			raceId = Long.valueOf(i+1);
         			// Firstly if there is a 0 result and a 0 resultCode, fix it to be DNC
-        			// Note that if the save button was never pressed we get a DNC 
+        			// Note that if a result was never entered or a code was never selected we get a DNC 
         			// as a result of this fix.
-        			if (resultsList[i] == 0 && resultCodes[i] ==0) {
-        				resultCodes[i] = 1;
-        				codePriorities[i] = true;
+        			// If there is a codePriority with 0 result then treat the code as real
+        			if (resultsList[i] == 0) {
+        				if (!codePriorities[i]) {
+        					resultCodes[i] = 1;
+        				}
         			}
-        			// Then we look to see if anything was actually altered before saving
         			if (codePriorities[i]) {
         				switch (resultCodes[i]) {
         					case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 10:
@@ -93,10 +95,8 @@ public class ResultsEntryListActivity extends ListActivity {
 		// Process the cursor to populate the elements in the ArrayList before binding it to the view
 		if (resultsCursor != null && resultsCursor.moveToFirst()) {
 			for (int i = 0; i < resultsCursor.getCount(); i++) {
-				// Declare a new resultObj(ect) for each line in the resultsCursor (i.e. each result)
 				ResultObj combinedObj = new ResultObj();
 				combinedObj.setRaceNumber(Integer.toString(resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_RACE))));
-				// Try this method instead of the commented out one
 				String result = resultsCursor.getString(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_RESULT));
 				int resultCode = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_CODE));
 				int redressPosition = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_RDG_POINTS));
@@ -108,11 +108,6 @@ public class ResultsEntryListActivity extends ListActivity {
 				case 11:
 					combinedObj.setRedressPosition(Integer.toString(redressPosition));
 				case 0:	case 12: case 13: case 14: case 15:
-					if (result.equals("0")) {
-						combinedObj.setResult("");						
-					} else {
-						combinedObj.setResult(result);						
-					}
 					combinedObj.setResult(result.equals("0") ? "" : result);
 					break;
 				// Next group require a code only so clear the result and redress fields
@@ -135,7 +130,6 @@ public class ResultsEntryListActivity extends ListActivity {
 			}
 		}
 		resultsCursor.close();
-        //final ListView list = (ListView) mListView.findViewById(android.R.id.list);
         final ListView list = getListView();
         list.setAdapter(mAdapter);
         list.setItemsCanFocus(true);

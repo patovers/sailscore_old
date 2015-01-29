@@ -7,7 +7,7 @@
 package com.overs.sailscore;
 
 public class RaceResultPair implements Comparable<RaceResultPair>{
-	private long race = 0;
+	private Long race = (long) 0;
 	private int result = 0;
 	private int discarded = 0;
 	private int resultCode = 0;
