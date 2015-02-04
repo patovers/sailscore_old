@@ -127,6 +127,7 @@ import android.widget.TextView;
 	        	  if (s.length() == 0) {
 	        	  } else {
 	        		  combinedList.get(pos).setRedressPosition(s.toString());
+	        		  combinedList.get(pos).setCodePriority(true);
 	        	  }
 	          }
 	          @Override

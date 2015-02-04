@@ -6,16 +6,41 @@
 
 package com.overs.sailscore;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.os.Bundle;
+import android.os.Environment;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.MeasureSpec;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.PdfWriter;
+
 
 public class SeriesScoreListActivity extends ListActivity{
 	private SailscoreDbAdapter mDbHelper;
@@ -28,6 +53,8 @@ public class SeriesScoreListActivity extends ListActivity{
 	float avgAllRaces = 0;
 	float netPoints = 0;
 	//float grossPoints = 0;
+	private static Font catFont = new Font(Font.FontFamily.HELVETICA, 18,
+		      Font.BOLD);
 	
     /** Called when the activity is first created. */
     @Override
@@ -77,7 +104,31 @@ public class SeriesScoreListActivity extends ListActivity{
 			float points;
 		}
 
- 	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		MenuInflater mi = getMenuInflater();
+		mi.inflate(R.menu.series_score_menu, menu);
+		return true;
+	}
+	
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+    	Bitmap bmp;
+    	switch(item.getItemId()) {
+    	case R.id.score_menu_image:
+    		bmp = getWholeListViewItemsToBitmap();
+    		saveBitmap(bmp);
+    		return true;
+    	case R.id.score_menu_pdf:
+    		bmp = getWholeListViewItemsToBitmap();
+    		savePDF(bmp);
+    		return true;
+    	}
+    	return super.onMenuItemSelected(featureId, item);
+    }
+
+	
 	private void fillData() {
 		/* This method is the wrapper for all the scoring functions and displaying of results:
 		 * 1. For each competitor in the series work out which results to discard
@@ -262,43 +313,6 @@ public class SeriesScoreListActivity extends ListActivity{
 			// Need to find the position of the competitor with id=entry
 			Long id = combinedList.get(entry).getId();
 			int rank = combinedList.get(entry).getPosition();
-			// resultsCursor returns one row per race for this competitor but they are not in the right order
-/*		   	Cursor resultsCursor = mDbHelper.getResults(id, mRowId);
-		   	// This loop goes through all the races for each competitor so the cursor has to have returned results in race order
-			for (int race=0; race < numRaces; race++) {
-				// These won't just fit into the combinedList format because combinedList is sorted into a new
-				// order as a result of the scoring process
-				int startTime = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_START_TIME));
-				int finishTime = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_FINISH_TIME));
-				int laps = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_LAPS));
-				int totalLaps = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_TOTAL_LAPS));
-				int rdgPoints = resultsCursor.getInt(resultsCursor.getColumnIndex(SailscoreDbAdapter.KEY_RDG_POINTS));
-				// This is a bodge for  now. Should really fix this properly
-				if (combinedList.get(entry).getRaceResults().get(race).getPoints() == 200000) {
-					combinedList.get(entry).getRaceResults().get(race).setResultCode(1);
-				}
-				mDbHelper.updateResult(
-					id, // competitor id
-					mRowId, // series
-					combinedList.get(entry).getRaceResults().get(race).getRace(),       
-					combinedList.get(entry).getRaceResults().get(race).getResult(),
-					startTime,
-					finishTime,
-					laps,
-					totalLaps,
-					combinedList.get(entry).getRaceResults().get(race).getResultCode(),
-					rdgPoints, //TODO this is saving into the wrong race
-					//combinedList.get(entry).getRaceResults().get(race).getRdgPoints(),
-					combinedList.get(entry).getRaceResults().get(race).getPoints(), 
-					1, // scored
-					combinedList.get(entry).getRaceResults().get(race).isDiscarded(),
-					rank,
-					combinedList.get(entry).getGrossPts(),
-					combinedList.get(entry).getNettPts());
-				resultsCursor.moveToNext();
-			}
-			resultsCursor.close();
-*/			
 			// Finally we need to create a string of all the race results for display in the row of the listView
 			// This can only be done here because up to now we didn't have all the information and races were in the wrong order.
 			// Pull out the race results to work on:
@@ -972,6 +986,130 @@ public class SeriesScoreListActivity extends ListActivity{
 		
 	}
 
+	public Bitmap getWholeListViewItemsToBitmap() {
+
+	    ListView listview    = getListView();
+	    ListAdapter adapter  = listview.getAdapter(); 
+	    int itemscount       = adapter.getCount();
+	    int allitemsheight   = 0;
+	    List<Bitmap> bmps    = new ArrayList<Bitmap>();
+
+	    for (int i = 0; i < itemscount; i++) {
+
+	        View childView      = adapter.getView(i, null, listview);
+	        childView.measure(MeasureSpec.makeMeasureSpec(listview.getWidth(), MeasureSpec.EXACTLY), 
+	                MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+
+	        childView.layout(0, 0, childView.getMeasuredWidth(), childView.getMeasuredHeight());
+	        childView.setDrawingCacheEnabled(true);
+	        childView.buildDrawingCache();
+	        bmps.add(childView.getDrawingCache());
+	        allitemsheight+=childView.getMeasuredHeight();
+	    }
+
+	    Bitmap bigbitmap    = Bitmap.createBitmap(listview.getMeasuredWidth(), allitemsheight, Bitmap.Config.ARGB_8888);
+	    Canvas bigcanvas    = new Canvas(bigbitmap);
+
+	    Paint paint = new Paint();
+	    int iHeight = 0;
+
+	    for (int i = 0; i < bmps.size(); i++) {
+	        Bitmap bmp = bmps.get(i);
+	        bigcanvas.drawBitmap(bmp, 0, iHeight, paint);
+	        iHeight+=bmp.getHeight();
+
+	        bmp.recycle();
+	        bmp=null;
+	    }
+
+
+	    return bigbitmap;
+	}
+	
+	public void saveBitmap(Bitmap bmp) {
+		String path = Environment.getExternalStorageDirectory().toString();
+		path = path + "/" + "sailscore";
+		String folder = "sailscore"; // For now put all images in one place
+		File f = new File(Environment.getExternalStorageDirectory(),
+                folder);
+        if (!f.exists()) {
+            f.mkdirs();
+        }
+		Cursor seriesCursor = mDbHelper.fetchSeries(mRowId);  // Just need the name of the series
+		String series = seriesCursor.getString(seriesCursor.getColumnIndex(SailscoreDbAdapter.KEY_SERIES));
+		seriesCursor.close();
+		OutputStream fOut = null;
+		File file = new File(path, series+".jpg"); // the File to save to
+		try {
+			fOut = new FileOutputStream(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		bmp.compress(Bitmap.CompressFormat.JPEG, 85, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
+		try {
+			fOut.flush();
+			fOut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public void savePDF(Bitmap bmp) {
+		String path = Environment.getExternalStorageDirectory().toString();
+		path = path + "/" + "sailscore";
+		String folder = "sailscore"; // For now put all images in one place
+		File f = new File(Environment.getExternalStorageDirectory(),
+                folder);
+        if (!f.exists()) {
+            f.mkdirs();
+        }
+		Cursor seriesCursor = mDbHelper.fetchSeries(mRowId);  // Just need the name of the series
+		String series = seriesCursor.getString(seriesCursor.getColumnIndex(SailscoreDbAdapter.KEY_SERIES));
+		seriesCursor.close();
+		OutputStream fOutPng = null;
+		File pngFile = new File(path, series+".png"); // the File to save to
+		try {
+			fOutPng = new FileOutputStream(pngFile);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		bmp.compress(Bitmap.CompressFormat.PNG, 100, fOutPng); // temporarily save to PNG format before conversion to PDF
+		URL pdfIn = null;
+		try {
+			pdfIn = new URL("file://"+path + "/" + series + ".png");
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		try {
+			fOutPng.flush();
+			fOutPng.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Document document = new Document();
+		document.addTitle("Series: "+series);
+	    document.addAuthor("Sailscore");
+	    document.addCreator("Sailscore, using itext");
+		File pdfFile = new File(path, series+".pdf"); // the File to save to
+		try {
+	        PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
+	        document.open();
+	        Paragraph preface = new Paragraph();
+	        preface.add(new Paragraph(("Sailscore results for "+ series+"\n"), catFont));
+	        Image image = Image.getInstance(pdfIn);
+	        //image.scaleAbsolute(400f, 200f);
+	        image.scalePercent((float) 25.0);
+	        document.add(preface);
+	        document.add(image);
+	        document.close();
+	    } catch(Exception e){
+	      e.printStackTrace();
+	    }
+	}
+
+	
 	// Here the rowId is the ID of the series to work with from the series table
 	private void setRowIdFromIntent() {
 		if (mRowId == null) {

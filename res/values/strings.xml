@@ -112,6 +112,8 @@
     <string name="gross_pts">Total</string>
     <string name="net_pts">Net</string>
     <string name="progress">Calculating results...</string>
+    <string name="export_image">Export results as image</string>
+    <string name="export_pdf">Export results as pdf</string>
 
     <!-- Strings for results export activity -->
     <string name="export_title">Exporting scored series</string>
